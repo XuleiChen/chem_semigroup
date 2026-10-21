@@ -1,0 +1,74 @@
+# ── paths ──────────────────────────────────────────────────────────────────
+data_raw:        "ChatReaction-V456.jsonl"
+data_dir:        "data"
+output_dir:      "outputs"
+
+# local Mac paths (for reference):
+#   data_raw:   /Users/xulei/Downloads/chemical_reactions/ChatReaction-V456.jsonl
+#   data_dir:   data
+#   output_dir: outputs
+model_path:      ""              # local path; leave empty to download from HF
+model_name:      "Qwen/Qwen2.5-1.5B-Instruct"
+hf_mirror:       "https://hf-mirror.com"
+
+# ── preprocessing ──────────────────────────────────────────────────────────
+keep_explicit_h: false
+
+# ── split ──────────────────────────────────────────────────────────────────
+split_ratios:    [0.85, 0.05, 0.10]
+split_seed:      42
+
+# ── sample generation ──────────────────────────────────────────────────────
+train_k_max:     3
+
+# ── prompt ─────────────────────────────────────────────────────────────────
+prompt_template: |
+  Below is the SMILES of the current state of a reaction system (molecules separated by '.').
+  {source}
+  Predict the state of the system after {k} elementary mechanistic step(s). Output only the SMILES.
+
+# ── LoRA ───────────────────────────────────────────────────────────────────
+lora_r:          8
+lora_alpha:      16
+lora_dropout:    0.10
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+
+# ── wandb ──────────────────────────────────────────────────────────────────
+wandb_project:          "chem_semigroup"
+wandb_run_name:         ""             # leave empty to auto-generate
+
+# ── training ───────────────────────────────────────────────────────────────
+num_train_epochs:       10
+learning_rate:          2.0e-4
+lr_scheduler_type:      cosine
+warmup_ratio:           0.03
+per_device_train_batch: 16
+gradient_accumulation:  1          # effective batch = 16
+bf16:                   true
+seed:                   42
+
+# ── inference ──────────────────────────────────────────────────────────────
+repetition_repeat_threshold: 3
+repetition_length_multiplier: 2.0
+eval_splits:
+  k2:
+    - [2]
+    - [1, 1]
+  k3:
+    - [3]
+    - [1, 1, 1]
+    - [1, 2]
+    - [2, 1]
+
+# ── evaluation ─────────────────────────────────────────────────────────────
+extrap_bins:            [[4, 5], [6, 10]]
+bootstrap_n:            1000
+bootstrap_seed:         0
+min_cell_size:          20
+
+# ── debug ──────────────────────────────────────────────────────────────────
+debug_n_reactions:      10
